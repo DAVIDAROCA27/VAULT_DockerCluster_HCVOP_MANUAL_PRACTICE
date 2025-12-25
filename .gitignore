@@ -1,0 +1,5 @@
+keys.txt
+*.json
+*.db
+*.lic
+.env

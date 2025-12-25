@@ -1,0 +1,113 @@
+version: '3.8'
+
+networks:
+   vault_network:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.9.0.0/16
+          ip_range: 10.9.0.0/16
+          gateway: 10.9.0.1 
+
+services:
+  vault-P1:
+    image: vault-hcvop-dr:1.0
+    container_name: vault-P1-cluster
+    hostname: vault-P1
+    restart: unless-stopped
+    volumes:
+      - ./vault-P1/config/vault-P1.hcl:/vault/config/vault.hcl:z
+      - ./vault-P1/data/:/vault/data:z
+      - ./vault.lic:/vault/license/vault.lic:z
+    cap_add:
+      - IPC_LOCK
+    command: vault server -config=/vault/config/vault.hcl
+    environment:
+      - VAULT_ADDR=http://127.0.0.1:8200
+      - VAULT_API_ADDR=http://vault-P1:8200
+      - VAULT_UNSEAL_KEY=${UNSEAL_VAULT_P1_KEY}
+      - VAULT_TOKEN=${ROOT_VAULT_P1_KEY}
+    ulimits:
+      memlock: -1
+      nofile:
+        soft: 65535
+        hard: 65535
+    networks:
+      vault_network:
+        ipv4_address:  10.9.1.10
+    ports:
+     - "8401:8200"  # API
+     - "8404:8201"  # Cluster (añade este!) 🚨 IMPORTANTE
+    healthcheck:
+      test: ["CMD", "vault", "status", "-tls-skip-verify"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  vault-S2:
+    image: vault-hcvop-dr:1.0
+    container_name: vault-S2-cluster
+    hostname: vault-S2
+    restart: unless-stopped
+    volumes:
+      - ./vault-S2/config/vault-S2.hcl:/vault/config/vault.hcl:z
+      - ./vault-S2/data/:/vault/data:z
+      - ./vault.lic:/vault/license/vault.lic:z
+    cap_add:
+      - IPC_LOCK
+    command: vault server -config=/vault/config/vault.hcl
+    environment:
+      - VAULT_ADDR=http://127.0.0.1:8200
+      - VAULT_API_ADDR=http://vault-S2:8200
+      - VAULT_UNSEAL_KEY=${UNSEAL_VAULT_S2_KEY}
+      - VAULT_TOKEN=${ROOT_VAULT_S2_KEY}
+    ulimits:
+      memlock: -1
+      nofile:
+        soft: 65535
+        hard: 65535
+    networks:
+      vault_network:
+        ipv4_address: 10.9.1.11 
+    ports:
+      - "8402:8200"  # API
+      - "8405:8201"  # Cluster 🚨 IMPORTANTE
+    healthcheck:
+      test: ["CMD", "vault", "status", "-tls-skip-verify"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  vault-T3:
+    image: vault-hcvop-dr:1.0
+    container_name: vault-T3-cluster
+    hostname: vault-T3
+    restart: unless-stopped
+    volumes:
+      - ./vault-T3/config/vault-T3.hcl:/vault/config/vault.hcl:z
+      - ./vault-T3/data/:/vault/data:z
+      - ./vault.lic:/vault/license/vault.lic:z
+    cap_add:
+      - IPC_LOCK
+    command: vault server -config=/vault/config/vault.hcl
+    environment:
+      - VAULT_ADDR=http://127.0.0.1:8200
+      - VAULT_API_ADDR=http://vault-T3:8200
+      - VAULT_UNSEAL_KEY=${UNSEAL_VAULT_T3_KEY}
+      - VAULT_TOKEN=${ROOT_VAULT_T3_KEY}
+    ulimits:
+      memlock: -1
+      nofile:
+        soft: 65535
+        hard: 65535
+    networks:
+      vault_network:
+        ipv4_address: 10.9.1.12 
+    ports:
+      - "8403:8200"  # API
+      - "8406:8201"  # Cluster 🚨 IMPORTANTE
+    healthcheck:
+      test: ["CMD", "vault", "status", "-tls-skip-verify"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
