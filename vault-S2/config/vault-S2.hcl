@@ -9,6 +9,14 @@ listener "tcp" {
   cluster_address = "0.0.0.0:8201"
 }
 
+seal "transit" {
+  address = "http://vault-T3:8200"
+  key_name = "autounseal"
+  mount_path = "transit/"
+  tls_skip_verify = "true"
+  token =  "hvs.CAESIMwraqs5uZRXih71x0gBz-VeteXZD4pIPKi8rPy3VmBKGiEKHGh2cy4yNWlsU0JsQWI0elB5a3pYR1dOdzVqRnYQ3hA"
+}
+
 api_addr = "http://vault-S2:8200"
 cluster_addr = "http://vault-S2:8201"
 ui = true

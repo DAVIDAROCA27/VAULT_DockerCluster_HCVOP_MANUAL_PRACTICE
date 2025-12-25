@@ -17,16 +17,17 @@ services:
     restart: unless-stopped
     volumes:
       - ./vault-P1/config/vault-P1.hcl:/vault/config/vault.hcl:z
-      - ./vault-P1/data/:/vault/data:z
+      - ./vault-P1/data/:/vault/data:z  
       - ./vault.lic:/vault/license/vault.lic:z
+      - ./vault-P1/config/transitoken.txt:/vault/config/transitoken.txt:z
     cap_add:
       - IPC_LOCK
-    command: vault server -config=/vault/config/vault.hcl
+    command: vault server -config=/vault/config/vault.hcl 
     environment:
       - VAULT_ADDR=http://127.0.0.1:8200
       - VAULT_API_ADDR=http://vault-P1:8200
       - VAULT_UNSEAL_KEY=${UNSEAL_VAULT_P1_KEY}
-      - VAULT_TOKEN=${ROOT_VAULT_P1_KEY}
+       - VAULT_TOKEN=${ROOT_VAULT_P1_KEY}
     ulimits:
       memlock: -1
       nofile:
@@ -37,7 +38,7 @@ services:
         ipv4_address:  10.9.1.10
     ports:
      - "8401:8200"  # API
-     - "8404:8201"  # Cluster (añade este!) 🚨 IMPORTANTE
+     - "8404:8201"  # Cluster 
     healthcheck:
       test: ["CMD", "vault", "status", "-tls-skip-verify"]
       interval: 10s
@@ -53,9 +54,10 @@ services:
       - ./vault-S2/config/vault-S2.hcl:/vault/config/vault.hcl:z
       - ./vault-S2/data/:/vault/data:z
       - ./vault.lic:/vault/license/vault.lic:z
+      - ./vault-S2/config/transitoken.txt:/vault/config/transitoken.txt:z
     cap_add:
       - IPC_LOCK
-    command: vault server -config=/vault/config/vault.hcl
+    command: vault server -config=/vault/config/vault.hcl 
     environment:
       - VAULT_ADDR=http://127.0.0.1:8200
       - VAULT_API_ADDR=http://vault-S2:8200
@@ -71,7 +73,7 @@ services:
         ipv4_address: 10.9.1.11 
     ports:
       - "8402:8200"  # API
-      - "8405:8201"  # Cluster 🚨 IMPORTANTE
+      - "8405:8201"  # Cluster 
     healthcheck:
       test: ["CMD", "vault", "status", "-tls-skip-verify"]
       interval: 10s
@@ -89,7 +91,7 @@ services:
       - ./vault.lic:/vault/license/vault.lic:z
     cap_add:
       - IPC_LOCK
-    command: vault server -config=/vault/config/vault.hcl
+    command: ["/bin/sh", "-c", "vault server -config=/vault/config/vault.hcl & sleep 5 && vault operator unseal $$VAULT_UNSEAL_KEY; wait"]
     environment:
       - VAULT_ADDR=http://127.0.0.1:8200
       - VAULT_API_ADDR=http://vault-T3:8200
@@ -105,7 +107,7 @@ services:
         ipv4_address: 10.9.1.12 
     ports:
       - "8403:8200"  # API
-      - "8406:8201"  # Cluster 🚨 IMPORTANTE
+      - "8406:8201"  # Cluster 
     healthcheck:
       test: ["CMD", "vault", "status", "-tls-skip-verify"]
       interval: 10s
