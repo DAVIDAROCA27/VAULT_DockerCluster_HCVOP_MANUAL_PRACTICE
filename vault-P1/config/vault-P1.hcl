@@ -9,12 +9,20 @@ listener "tcp" {
   cluster_address = "0.0.0.0:8201"
 }
 
+retry_join {
+  leader_api_addr = "http://vault-P2:8200"
+}
+
+retry_join {
+  leader_api_addr = "http://vault-P3:8200"
+}
+
 seal "transit" {
   address = "http://vault-T3:8200"
   key_name = "autounseal"
   mount_path = "transit/"
   tls_skip_verify = "true"
-  token = "hvs.CAESIMwraqs5uZRXih71x0gBz-VeteXZD4pIPKi8rPy3VmBKGiEKHGh2cy4yNWlsU0JsQWI0elB5a3pYR1dOdzVqRnYQ3hA"
+  token = "hvs."
 }
 
 api_addr = "http://vault-P1:8200"

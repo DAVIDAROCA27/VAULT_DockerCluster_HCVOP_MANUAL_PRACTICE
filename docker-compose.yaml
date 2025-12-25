@@ -27,7 +27,7 @@ services:
       - VAULT_ADDR=http://127.0.0.1:8200
       - VAULT_API_ADDR=http://vault-P1:8200
       - VAULT_UNSEAL_KEY=${UNSEAL_VAULT_P1_KEY}
-       - VAULT_TOKEN=${ROOT_VAULT_P1_KEY}
+      - VAULT_TOKEN=${ROOT_VAULT_P1_KEY}
     ulimits:
       memlock: -1
       nofile:
@@ -35,16 +35,121 @@ services:
         hard: 65535
     networks:
       vault_network:
-        ipv4_address:  10.9.1.10
+        ipv4_address:  10.9.1.1
     ports:
      - "8401:8200"  # API
-     - "8404:8201"  # Cluster 
+     - "8408:8201"  # Cluster 
     healthcheck:
       test: ["CMD", "vault", "status", "-tls-skip-verify"]
       interval: 10s
       timeout: 5s
       retries: 5
 
+  vault-P2:
+    image: vault-hcvop-dr:1.0
+    container_name: vault-P2-cluster
+    hostname: vault-P2
+    restart: unless-stopped
+    volumes:
+      - ./vault-P2/config/vault-P2.hcl:/vault/config/vault.hcl:z
+      - ./vault-P2/data/:/vault/data:z  
+      - ./vault.lic:/vault/license/vault.lic:z
+      - ./vault-P2/config/transitoken.txt:/vault/config/transitoken.txt:z
+    cap_add:
+      - IPC_LOCK
+    command: vault server -config=/vault/config/vault.hcl 
+    environment:
+      - VAULT_ADDR=http://127.0.0.1:8200
+      - VAULT_API_ADDR=http://vault-P2:8200
+      - VAULT_UNSEAL_KEY=${UNSEAL_VAULT_P1_KEY}
+      - VAULT_TOKEN=${ROOT_VAULT_P1_KEY}
+    ulimits:
+      memlock: -1
+      nofile:
+        soft: 65535
+        hard: 65535
+    networks:
+      vault_network:
+        ipv4_address:  10.9.1.2
+    ports:
+     - "8402:8200"  # API
+     - "8409:8201"  # Cluster 
+    healthcheck:
+      test: ["CMD", "vault", "status", "-tls-skip-verify"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  vault-P3:
+    image: vault-hcvop-dr:1.0
+    container_name: vault-P3-cluster
+    hostname: vault-P3
+    restart: unless-stopped
+    volumes:
+      - ./vault-P3/config/vault-P3.hcl:/vault/config/vault.hcl:z
+      - ./vault-P3/data/:/vault/data:z  
+      - ./vault.lic:/vault/license/vault.lic:z
+      - ./vault-P3/config/transitoken.txt:/vault/config/transitoken.txt:z
+    cap_add:
+      - IPC_LOCK
+    command: vault server -config=/vault/config/vault.hcl 
+    environment:
+      - VAULT_ADDR=http://127.0.0.1:8200
+      - VAULT_API_ADDR=http://vault-P3:8200
+      - VAULT_UNSEAL_KEY=${UNSEAL_VAULT_P1_KEY}
+      - VAULT_TOKEN=${ROOT_VAULT_P1_KEY}
+    ulimits:
+      memlock: -1
+      nofile:
+        soft: 65535
+        hard: 65535
+    networks:
+      vault_network:
+        ipv4_address:  10.9.1.3
+    ports:
+     - "8403:8200"  # API
+     - "8410:8201"  # Cluster 
+    healthcheck:
+      test: ["CMD", "vault", "status", "-tls-skip-verify"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  vault-S1:
+    image: vault-hcvop-dr:1.0
+    container_name: vault-S1-cluster
+    hostname: vault-S1
+    restart: unless-stopped
+    volumes:
+      - ./vault-S1/config/vault-S1.hcl:/vault/config/vault.hcl:z
+      - ./vault-S1/data/:/vault/data:z
+      - ./vault.lic:/vault/license/vault.lic:z
+      - ./vault-S1/config/transitoken.txt:/vault/config/transitoken.txt:z
+    cap_add:
+      - IPC_LOCK
+    command: vault server -config=/vault/config/vault.hcl 
+    environment:
+      - VAULT_ADDR=http://127.0.0.1:8200
+      - VAULT_API_ADDR=http://vault-S1:8200
+      - VAULT_UNSEAL_KEY=${UNSEAL_VAULT_S1_KEY}
+      - VAULT_TOKEN=${ROOT_VAULT_S1_KEY}
+    ulimits:
+      memlock: -1
+      nofile:
+        soft: 65535
+        hard: 65535
+    networks:
+      vault_network:
+        ipv4_address: 10.9.1.4
+    ports:
+      - "8404:8200"  # API
+      - "8411:8201"  # Cluster 
+    healthcheck:
+      test: ["CMD", "vault", "status", "-tls-skip-verify"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
   vault-S2:
     image: vault-hcvop-dr:1.0
     container_name: vault-S2-cluster
@@ -61,8 +166,8 @@ services:
     environment:
       - VAULT_ADDR=http://127.0.0.1:8200
       - VAULT_API_ADDR=http://vault-S2:8200
-      - VAULT_UNSEAL_KEY=${UNSEAL_VAULT_S2_KEY}
-      - VAULT_TOKEN=${ROOT_VAULT_S2_KEY}
+      - VAULT_UNSEAL_KEY=${UNSEAL_VAULT_S1_KEY}
+      - VAULT_TOKEN=${ROOT_VAULT_S1_KEY}
     ulimits:
       memlock: -1
       nofile:
@@ -70,10 +175,45 @@ services:
         hard: 65535
     networks:
       vault_network:
-        ipv4_address: 10.9.1.11 
+        ipv4_address: 10.9.1.5 
     ports:
-      - "8402:8200"  # API
-      - "8405:8201"  # Cluster 
+      - "8405:8200"  # API
+      - "8412:8201"  # Cluster 
+    healthcheck:
+      test: ["CMD", "vault", "status", "-tls-skip-verify"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  vault-S3:
+    image: vault-hcvop-dr:1.0
+    container_name: vault-S3-cluster
+    hostname: vault-S3
+    restart: unless-stopped
+    volumes:
+      - ./vault-S3/config/vault-S3.hcl:/vault/config/vault.hcl:z
+      - ./vault-S3/data/:/vault/data:z
+      - ./vault.lic:/vault/license/vault.lic:z
+      - ./vault-S3/config/transitoken.txt:/vault/config/transitoken.txt:z
+    cap_add:
+      - IPC_LOCK
+    command: vault server -config=/vault/config/vault.hcl 
+    environment:
+      - VAULT_ADDR=http://127.0.0.1:8200
+      - VAULT_API_ADDR=http://vault-S3:8200
+      - VAULT_UNSEAL_KEY=${UNSEAL_VAULT_S1_KEY}
+      - VAULT_TOKEN=${ROOT_VAULT_S1_KEY}
+    ulimits:
+      memlock: -1
+      nofile:
+        soft: 65535
+        hard: 65535
+    networks:
+      vault_network:
+        ipv4_address: 10.9.1.6 
+    ports:
+      - "8406:8200"  # API
+      - "8413:8201"  # Cluster 
     healthcheck:
       test: ["CMD", "vault", "status", "-tls-skip-verify"]
       interval: 10s
@@ -104,10 +244,10 @@ services:
         hard: 65535
     networks:
       vault_network:
-        ipv4_address: 10.9.1.12 
+        ipv4_address: 10.9.1.7 
     ports:
-      - "8403:8200"  # API
-      - "8406:8201"  # Cluster 
+      - "8407:8200"  # API
+      - "8414:8201"  # Cluster 
     healthcheck:
       test: ["CMD", "vault", "status", "-tls-skip-verify"]
       interval: 10s

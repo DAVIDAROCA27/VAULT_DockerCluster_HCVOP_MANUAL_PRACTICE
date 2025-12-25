@@ -1,6 +1,6 @@
 storage "raft" {
   path    = "/vault/data"
-  node_id = "vault-S2"
+  node_id = "vault-S1"
 }
 
 listener "tcp" {
@@ -10,11 +10,11 @@ listener "tcp" {
 }
 
 retry_join {
-  leader_api_addr = "http://vault-P1:8200"
+  leader_api_addr = "http://vault-S2:8200"
 }
 
 retry_join {
-  leader_api_addr = "http://vault-P3:8200"
+  leader_api_addr = "http://vault-S3:8200"
 }
 
 seal "transit" {
@@ -25,8 +25,8 @@ seal "transit" {
   token =  "hvs."
 }
 
-api_addr = "http://vault-S2:8200"
-cluster_addr = "http://vault-S2:8201"
+api_addr = "http://vault-S1:8200"
+cluster_addr = "http://vault-S1:8201"
 ui = true
 disable_mlock = true
 license_path = "/vault/license/vault.lic"
