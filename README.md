@@ -6,5 +6,6 @@ This is a small cluster runned by podman to manually practice to the Vault   Ope
 podman build -t vault-hcvop-dr:1.0 .
 podman-compose up -d
 podman ps
+podman exec -it vault-P1-cluster sh
 ```
  
